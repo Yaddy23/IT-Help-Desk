@@ -79,3 +79,55 @@ export interface TicketStats {
   byPriority: { _id: TicketPriority; count: number }[]
   byCategory: { _id: TicketCategory; count: number }[]
 }
+
+export type DeviceType = 'laptop' | 'desktop' | 'monitor' | 'printer' | 'phone' | 'network' | 'peripheral' | 'other'
+export type AssetStatus = 'in_stock' | 'in_use' | 'in_repair' | 'retired'
+
+export interface Asset {
+  _id: string
+  assetTag: string
+  serialNumber?: string
+  deviceType: DeviceType
+  brand?: string
+  model?: string
+  status: AssetStatus
+  location?: string
+  purchaseDate?: string
+  warrantyExpiry?: string
+  cost?: number
+  notes?: string
+  assignedTo: Pick<User, '_id' | 'name' | 'email'> | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AssetAssignment {
+  _id: string
+  asset: string
+  employee: Pick<User, '_id' | 'name' | 'email'> | string
+  assignedBy: Pick<User, '_id' | 'name'> | string
+  assignedAt: string
+  returnedAt: string | null
+  conditionOut?: string
+  conditionIn?: string
+  notes?: string
+}
+
+export interface MaintenanceRecord {
+  _id: string
+  asset: string
+  type: 'repair' | 'upgrade' | 'inspection' | 'replacement'
+  description: string
+  performedBy?: string
+  cost?: number
+  downtimeHours?: number
+  relatedTicket: string | null
+  date: string
+}
+
+export interface AssetStats {
+  total: number
+  byStatus: { _id: AssetStatus; count: number }[]
+  byType: { _id: DeviceType; count: number }[]
+  warrantyExpiring: number
+}

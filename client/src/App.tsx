@@ -6,6 +6,9 @@ import Dashboard from '@/pages/Dashboard'
 import TicketList from '@/pages/tickets/TicketList'
 import TicketDetail from '@/pages/tickets/TicketDetail'
 import NewTicket from '@/pages/tickets/NewTicket'
+import AssetList from '@/pages/assets/AssetList'
+import AssetDetail from '@/pages/assets/AssetDetail'
+import NewAsset from '@/pages/assets/NewAsset'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -35,6 +38,9 @@ export default function App() {
         <Route path="/tickets" element={<TicketList />} />
         <Route path="/tickets/new" element={<NewTicket />} />
         <Route path="/tickets/:id" element={<TicketDetail />} />
+        <Route path="/assets" element={<AssetList />} />
+        <Route path="/assets/new" element={<NewAsset />} />
+        <Route path="/assets/:id" element={<AssetDetail />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
