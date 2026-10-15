@@ -2,6 +2,7 @@
 // can resolve refs even when only one model is imported directly.
 import './Department.js'
 import './User.js'
+import './Asset.js'
 import './Ticket.js'
 import './TicketComment.js'
 
@@ -9,6 +10,8 @@ export { Department } from './Department.js'
 export type { IDepartment } from './Department.js'
 export { User } from './User.js'
 export type { IUser, Role } from './User.js'
+export { Asset } from './Asset.js'
+export type { IAsset, AssetStatus, DeviceType } from './Asset.js'
 export { Ticket, slaDueFor } from './Ticket.js'
 export type { ITicket, IAttachment, TicketStatus, TicketPriority, TicketCategory } from './Ticket.js'
 export { TicketComment } from './TicketComment.js'

@@ -3,6 +3,9 @@ import Layout from '@/components/layout/Layout'
 import { useAuth } from '@/context/AuthContext'
 import Login from '@/pages/auth/Login'
 import Dashboard from '@/pages/Dashboard'
+import TicketList from '@/pages/tickets/TicketList'
+import TicketDetail from '@/pages/tickets/TicketDetail'
+import NewTicket from '@/pages/tickets/NewTicket'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -29,6 +32,9 @@ export default function App() {
         }
       >
         <Route path="/" element={<Dashboard />} />
+        <Route path="/tickets" element={<TicketList />} />
+        <Route path="/tickets/new" element={<NewTicket />} />
+        <Route path="/tickets/:id" element={<TicketDetail />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

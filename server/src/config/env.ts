@@ -13,6 +13,7 @@ export const env = {
   jwtAccessSecret: required('JWT_ACCESS_SECRET'),
   jwtRefreshSecret: required('JWT_REFRESH_SECRET'),
   clientUrl: process.env.CLIENT_URL ?? 'http://localhost:5173',
+  uploadDir: process.env.UPLOAD_DIR ?? 'uploads',
   smtp: {
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT ?? 587),
