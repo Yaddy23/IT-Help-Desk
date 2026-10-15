@@ -4,6 +4,7 @@ import type { AuthRequest } from '../middleware/auth.js'
 import { ApiError } from '../middleware/error.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { paginate, parsePagination } from '../utils/paginate.js'
+import { notifyAsync } from '../services/notification.service.js'
 
 const STAFF_ROLES = new Set(['admin', 'it_staff'])
 
@@ -142,6 +143,16 @@ export const assignAsset = asyncHandler(async (req: AuthRequest, res: Response) 
   asset.assignedTo = employeeId as never
   asset.status = 'in_use'
   await asset.save()
+
+  notifyAsync({
+    userId: employeeId,
+    actorId: req.user!._id,
+    type: 'assignment_created',
+    title: `Asset ${asset.assetTag} assigned to you`,
+    message: `${req.user!.name} assigned you a ${asset.deviceType}${asset.brand ? ` (${asset.brand} ${asset.model ?? ''})` : ''}.`,
+    link: `/assets/${asset._id}`,
+  })
+
   res.json(asset)
 })
 

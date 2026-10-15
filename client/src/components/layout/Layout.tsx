@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
+import NotificationBell from '@/components/layout/NotificationBell'
 import type { Role } from '@/types'
 
 interface NavItem {
@@ -82,6 +83,7 @@ export default function Layout() {
           </div>
           <div className="hidden md:block" />
           <div className="flex items-center gap-2">
+            <NotificationBell />
             <button
               onClick={toggle}
               className="rounded-lg p-2 text-lg hover:bg-slate-100 dark:hover:bg-slate-800"

@@ -7,6 +7,8 @@ import { ApiError } from '../middleware/error.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { parsePagination, paginate } from '../utils/paginate.js'
 import { nextTicketNumber } from '../utils/ticketNumber.js'
+import { notifyAsync } from '../services/notification.service.js'
+import { User } from '../models/index.js'
 
 const STAFF_ROLES = new Set(['admin', 'it_staff'])
 
@@ -102,6 +104,19 @@ export const createTicket = asyncHandler(async (req: AuthRequest, res: Response)
     slaDueAt: slaDueFor((priority as 'low') ?? 'medium'),
   })
 
+  // Let the IT staff queue know a new ticket landed.
+  const staff = await User.find({ role: { $in: ['admin', 'it_staff'] }, isActive: true }).select('_id')
+  for (const s of staff) {
+    notifyAsync({
+      userId: String(s._id),
+      actorId: req.user!._id,
+      type: 'ticket_updated',
+      title: `New ticket ${ticket.ticketNumber}`,
+      message: `${req.user!.name} submitted "${ticket.title}" (${ticket.priority} priority).`,
+      link: `/tickets/${ticket._id}`,
+    })
+  }
+
   res.status(201).json(ticket)
 })
 
@@ -110,6 +125,9 @@ export const updateTicket = asyncHandler(async (req: AuthRequest, res: Response)
 
   const ticket = await Ticket.findById(req.params.id)
   if (!ticket) throw new ApiError(404, 'Ticket not found')
+
+  const prevAssignee = ticket.assignee ? String(ticket.assignee) : null
+  const prevStatus = ticket.status
 
   const { status, assignee, priority } = req.body as {
     status?: string
@@ -147,6 +165,35 @@ export const updateTicket = asyncHandler(async (req: AuthRequest, res: Response)
     { path: 'assignee', select: 'name email role avatarUrl' },
     { path: 'relatedAsset', select: 'assetTag deviceType brand model' },
   ])
+
+  // Assignment notification for the new assignee.
+  if (assignee && String(ticket.assignee?._id ?? assignee) !== prevAssignee) {
+    notifyAsync({
+      userId: assignee,
+      actorId: req.user!._id,
+      type: 'ticket_assigned',
+      title: `Ticket ${ticket.ticketNumber} assigned to you`,
+      message: `${req.user!.name} assigned you "${ticket.title}".`,
+      link: `/tickets/${ticket._id}`,
+    })
+  }
+
+  // Status changes (explicit or derived from assignment) go to the requester.
+  if (ticket.status !== prevStatus) {
+    const requesterId = String(ticket.requester._id ?? ticket.requester)
+    notifyAsync({
+      userId: requesterId,
+      actorId: req.user!._id,
+      type: ticket.status === 'resolved' ? 'ticket_resolved' : 'ticket_updated',
+      title:
+        ticket.status === 'resolved'
+          ? `Ticket ${ticket.ticketNumber} resolved`
+          : `Ticket ${ticket.ticketNumber} is now ${ticket.status.replace('_', ' ')}`,
+      message: `${req.user!.name} moved "${ticket.title}" to ${ticket.status.replace('_', ' ')}.`,
+      link: `/tickets/${ticket._id}`,
+    })
+  }
+
   res.json(ticket)
 })
 
@@ -166,6 +213,18 @@ export const reopenTicket = asyncHandler(async (req: AuthRequest, res: Response)
   ticket.closedAt = null
   ticket.slaDueAt = slaDueFor(ticket.priority)
   await ticket.save()
+
+  if (ticket.assignee) {
+    notifyAsync({
+      userId: String(ticket.assignee),
+      actorId: req.user!._id,
+      type: 'ticket_updated',
+      title: `Ticket ${ticket.ticketNumber} reopened`,
+      message: `${req.user!.name} reopened "${ticket.title}".`,
+      link: `/tickets/${ticket._id}`,
+    })
+  }
+
   res.json(ticket)
 })
 
@@ -194,6 +253,32 @@ export const addComment = asyncHandler(async (req: AuthRequest, res: Response) =
   }
 
   await comment.populate('author', 'name role avatarUrl')
+
+  // Public replies notify the other side of the conversation; internal notes
+  // stay between staff.
+  if (!comment.isInternal) {
+    const authorId = req.user!._id
+    if (isOwner && ticket.assignee) {
+      notifyAsync({
+        userId: String(ticket.assignee),
+        actorId: authorId,
+        type: 'ticket_commented',
+        title: `New comment on ${ticket.ticketNumber}`,
+        message: `${req.user!.name}: "${message.trim().slice(0, 120)}"`,
+        link: `/tickets/${ticket._id}`,
+      })
+    } else if (!isOwner) {
+      notifyAsync({
+        userId: String(ticket.requester),
+        actorId: authorId,
+        type: 'ticket_commented',
+        title: `New comment on ${ticket.ticketNumber}`,
+        message: `${req.user!.name}: "${message.trim().slice(0, 120)}"`,
+        link: `/tickets/${ticket._id}`,
+      })
+    }
+  }
+
   res.status(201).json(comment)
 })
 

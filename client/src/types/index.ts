@@ -131,3 +131,22 @@ export interface AssetStats {
   byType: { _id: DeviceType; count: number }[]
   warrantyExpiring: number
 }
+
+export type NotificationType =
+  | 'ticket_assigned'
+  | 'ticket_updated'
+  | 'ticket_commented'
+  | 'ticket_resolved'
+  | 'assignment_created'
+  | 'system'
+
+export interface AppNotification {
+  _id: string
+  type: NotificationType
+  title: string
+  message: string
+  link?: string
+  isRead: boolean
+  readAt?: string | null
+  createdAt: string
+}
