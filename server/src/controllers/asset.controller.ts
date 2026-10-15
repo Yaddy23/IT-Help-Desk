@@ -5,6 +5,7 @@ import { ApiError } from '../middleware/error.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { paginate, parsePagination } from '../utils/paginate.js'
 import { notifyAsync } from '../services/notification.service.js'
+import { audit } from '../utils/audit.js'
 
 const STAFF_ROLES = new Set(['admin', 'it_staff'])
 
@@ -63,6 +64,7 @@ export const createAsset = asyncHandler(async (req: AuthRequest, res: Response) 
   if (!assetTag?.trim()) throw new ApiError(400, 'Asset tag is required')
 
   const asset = await Asset.create({ ...rest, assetTag: assetTag.trim().toUpperCase() })
+  audit({ req, action: 'asset.created', targetType: 'asset', targetId: String(asset._id), after: { assetTag: asset.assetTag } })
   res.status(201).json(asset)
 })
 
@@ -143,6 +145,7 @@ export const assignAsset = asyncHandler(async (req: AuthRequest, res: Response) 
   asset.assignedTo = employeeId as never
   asset.status = 'in_use'
   await asset.save()
+  audit({ req, action: 'asset.assigned', targetType: 'asset', targetId: String(asset._id), after: { employeeId } })
 
   notifyAsync({
     userId: employeeId,
@@ -175,6 +178,7 @@ export const returnAsset = asyncHandler(async (req: AuthRequest, res: Response) 
   asset.assignedTo = null
   asset.status = 'in_stock'
   await asset.save()
+  audit({ req, action: 'asset.returned', targetType: 'asset', targetId: String(asset._id) })
   res.json(asset)
 })
 

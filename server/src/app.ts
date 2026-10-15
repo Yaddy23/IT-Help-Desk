@@ -11,6 +11,10 @@ import userRoutes from './routes/user.routes.js'
 import assetRoutes from './routes/asset.routes.js'
 import notificationRoutes from './routes/notification.routes.js'
 import reportRoutes from './routes/report.routes.js'
+import knowledgeRoutes from './routes/knowledge.routes.js'
+import adminRoutes from './routes/admin.routes.js'
+import auditRoutes from './routes/audit.routes.js'
+import settingsRoutes from './routes/settings.routes.js'
 import { errorHandler, notFound } from './middleware/error.js'
 
 export function createApp() {
@@ -37,6 +41,10 @@ export function createApp() {
   app.use('/api/assets', assetRoutes)
   app.use('/api/notifications', notificationRoutes)
   app.use('/api/reports', reportRoutes)
+  app.use('/api/knowledge', knowledgeRoutes)
+  app.use('/api/admin', adminRoutes)
+  app.use('/api/audit-logs', auditRoutes)
+  app.use('/api/settings', settingsRoutes)
 
   app.use(notFound)
   app.use(errorHandler)

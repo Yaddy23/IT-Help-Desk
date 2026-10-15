@@ -10,6 +10,12 @@ import AssetList from '@/pages/assets/AssetList'
 import AssetDetail from '@/pages/assets/AssetDetail'
 import NewAsset from '@/pages/assets/NewAsset'
 import Reports from '@/pages/reports/Reports'
+import KnowledgeList from '@/pages/knowledge/KnowledgeList'
+import KnowledgeDetail from '@/pages/knowledge/KnowledgeDetail'
+import KnowledgeEditor from '@/pages/knowledge/KnowledgeEditor'
+import EmployeeList from '@/pages/employees/EmployeeList'
+import AuditLogs from '@/pages/admin/AuditLogs'
+import SettingsPage from '@/pages/admin/Settings'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -43,6 +49,13 @@ export default function App() {
         <Route path="/assets/new" element={<NewAsset />} />
         <Route path="/assets/:id" element={<AssetDetail />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/knowledge" element={<KnowledgeList />} />
+        <Route path="/knowledge/new" element={<KnowledgeEditor />} />
+        <Route path="/knowledge/:id/edit" element={<KnowledgeEditor />} />
+        <Route path="/knowledge/:id" element={<KnowledgeDetail />} />
+        <Route path="/employees" element={<EmployeeList />} />
+        <Route path="/audit-logs" element={<AuditLogs />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

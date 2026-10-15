@@ -9,6 +9,7 @@ import { parsePagination, paginate } from '../utils/paginate.js'
 import { nextTicketNumber } from '../utils/ticketNumber.js'
 import { notifyAsync } from '../services/notification.service.js'
 import { User } from '../models/index.js'
+import { audit } from '../utils/audit.js'
 
 const STAFF_ROLES = new Set(['admin', 'it_staff'])
 
@@ -104,6 +105,8 @@ export const createTicket = asyncHandler(async (req: AuthRequest, res: Response)
     slaDueAt: slaDueFor((priority as 'low') ?? 'medium'),
   })
 
+  audit({ req, action: 'ticket.created', targetType: 'ticket', targetId: String(ticket._id), after: { priority, category } })
+
   // Let the IT staff queue know a new ticket landed.
   const staff = await User.find({ role: { $in: ['admin', 'it_staff'] }, isActive: true }).select('_id')
   for (const s of staff) {
@@ -160,6 +163,14 @@ export const updateTicket = asyncHandler(async (req: AuthRequest, res: Response)
   }
 
   await ticket.save()
+  audit({
+    req,
+    action: 'ticket.updated',
+    targetType: 'ticket',
+    targetId: String(ticket._id),
+    before: { status: prevStatus, assignee: prevAssignee, priority: ticket.priority },
+    after: { status: ticket.status, assignee, priority },
+  })
   await ticket.populate([
     { path: 'requester', select: 'name email role department avatarUrl' },
     { path: 'assignee', select: 'name email role avatarUrl' },

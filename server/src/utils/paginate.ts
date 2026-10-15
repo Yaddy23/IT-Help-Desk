@@ -17,16 +17,27 @@ export function parsePagination(query: Record<string, unknown>) {
 export async function paginate<T extends Model<any>>(
   model: T,
   filter: Record<string, unknown>,
-  { page, limit, skip }: ReturnType<typeof parsePagination>,
+  {
+    page,
+    limit,
+    skip,
+  }: ReturnType<typeof parsePagination>,
   sort: Record<string, 1 | -1> = { createdAt: -1 },
-  populate?: string | string[],
+  populate?: string | { path: string; select?: string } | (string | { path: string; select?: string })[],
 ) {
+  let query = model.find(filter)
+  if (populate) {
+    const populateArray = Array.isArray(populate) ? populate : [populate]
+    for (const pop of populateArray) {
+      if (typeof pop === 'string') {
+        query = query.populate(pop)
+      } else {
+        query = query.populate({ path: pop.path, select: pop.select })
+      }
+    }
+  }
   const [items, total] = await Promise.all([
-    (populate ? model.find(filter).populate(populate) : model.find(filter))
-      .sort(sort)
-      .skip(skip)
-      .limit(limit)
-      .lean(),
+    query.sort(sort).skip(skip).limit(limit).lean(),
     model.countDocuments(filter),
   ])
 
