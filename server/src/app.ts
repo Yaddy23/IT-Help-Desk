@@ -35,7 +35,7 @@ export function createApp() {
     standardHeaders: true,
     legacyHeaders: false,
     message: { message: 'Too many attempts, try again later' },
-    trustProxy: true,
+    validate: false,
   })
 
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }))
