@@ -23,7 +23,7 @@ export function refreshCookieOptions() {
     sameSite: 'lax' as const,
     secure: env.nodeEnv === 'production',
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: '/api/auth',
+    path: '/',
   }
 }
 
