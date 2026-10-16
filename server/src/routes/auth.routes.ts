@@ -11,5 +11,6 @@ router.post('/forgot-password', forgotPassword)
 router.post('/reset-password', resetPassword)
 router.get('/me', requireAuth, me)
 router.post('/change-password', requireAuth, changePassword)
+router.get('/refresh', (req, res) => res.status(405).json({ message: 'Method Not Allowed: Use POST instead' }))
 
 export default router
