@@ -38,13 +38,19 @@ export const login = asyncHandler(async (req: AuthRequest, res: Response) => {
 
 export const refresh = asyncHandler(async (req: AuthRequest, res: Response) => {
   const token = req.cookies?.[refreshCookie]
-  if (!token) throw new ApiError(401, 'No refresh token')
+  // Debug: log cookies and token presence
+  console.log('Refresh cookies:', req.cookies)
+  console.log('Refresh token present:', !!token)
+  if (!token) {
+    console.log('No refresh token found')
+    throw new ApiError(401, 'No refresh token')
+  }
 
   let payload: { sub: string }
   try {
     payload = jwt.verify(token, env.jwtRefreshSecret) as { sub: string }
   } catch {
-    res.clearCookie(refreshCookie, { path: '/api/auth' })
+    res.clearCookie(refreshCookie, { path: '/' })
     throw new ApiError(401, 'Invalid refresh token')
   }
 
@@ -56,7 +62,7 @@ export const refresh = asyncHandler(async (req: AuthRequest, res: Response) => {
 })
 
 export const logout = asyncHandler(async (_req: AuthRequest, res: Response) => {
-  res.clearCookie(refreshCookie, { path: '/api/auth' })
+  res.clearCookie(refreshCookie, { path: '/' })
   res.json({ message: 'Logged out' })
 })
 
