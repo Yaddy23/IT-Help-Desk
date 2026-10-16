@@ -20,6 +20,9 @@ import { errorHandler, notFound } from './middleware/error.js'
 export function createApp() {
   const app = express()
 
+  app.set('trust proxy', true)
+
+
   app.use(helmet())
   app.use(cors({ origin: env.clientUrl, credentials: true }))
   app.use(express.json({ limit: '2mb' }))
@@ -32,6 +35,7 @@ export function createApp() {
     standardHeaders: true,
     legacyHeaders: false,
     message: { message: 'Too many attempts, try again later' },
+    trustProxy: true,
   })
 
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }))
