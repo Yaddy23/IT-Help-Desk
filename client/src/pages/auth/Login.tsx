@@ -2,11 +2,13 @@ import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
+import { useNavigate } from 'react-router-dom'
 import heroImg from '@/assets/hero.png'
 
 export default function Login() {
   const { login } = useAuth()
   const { dark, toggle } = useTheme()
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -18,6 +20,7 @@ export default function Login() {
     setSubmitting(true)
     try {
       await login(email, password)
+      navigate('/dashboard', { replace: true })
     } catch (err) {
       setError(err instanceof Error ? 'Invalid email or password' : 'Login failed')
     } finally {
