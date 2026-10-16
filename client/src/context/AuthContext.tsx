@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import api, { setAccessToken } from '@/api/client'
 import type { AuthResponse, User } from '@/types'
@@ -14,18 +14,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    api
-      .post<AuthResponse>('/auth/refresh')
-      .then(({ data }) => {
-        setAccessToken(data.accessToken)
-        setUser(data.user)
-      })
-      .catch(() => setAccessToken(null))
-      .finally(() => setLoading(false))
-  }, [])
+  const [loading, setLoading] = useState(false)
 
   const login = useCallback(async (email: string, password: string) => {
     const { data } = await api.post<AuthResponse>('/auth/login', { email, password })

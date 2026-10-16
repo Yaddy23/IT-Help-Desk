@@ -24,18 +24,12 @@ api.interceptors.response.use(
     const original = error.config
     if (error.response?.status === 401 && !original._retry && !original.url?.includes('/auth/')) {
       original._retry = true
-      try {
-        const { data } = await api.post('/auth/refresh')
-        setAccessToken(data.accessToken)
-        original.headers.Authorization = `Bearer ${data.accessToken}`
-        return api(original)
-      } catch {
-        setAccessToken(null)
-        window.location.href = '/login'
-      }
+      // clear access token and redirect to login
+      setAccessToken(null)
+      window.location.href = '/login'
     }
     return Promise.reject(error)
-  },
+  }
 )
 
 export default api
